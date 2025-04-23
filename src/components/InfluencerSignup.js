@@ -27,7 +27,8 @@ const InfluencerSignup = () => {
   
       reset();
       navigate("/success");
-      
+      // Trigger Vercel redeploy
+
       // 👇 Real request (comment out for frontend-only mode)
       // await axios.post("http://localhost:5001/influencer-signup", finalData);
     } catch (error) {
