@@ -12,19 +12,26 @@ const PredictPriceForm = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     setPredictedPrice(null);
-
+  
     try {
-      const res = await axios.get(
-        `http://localhost:5001/predict-price?engagement_rate=${data.engagement_rate}`
-      );
-      setPredictedPrice(res.data.predicted_price);
+      // 👇 Simulate result (frontend-only mode)
+      // Remove this if backend is available
+      const fakePrediction = (parseFloat(data.engagement_rate || 0) * 1000).toFixed(2);
+      setPredictedPrice(fakePrediction);
+  
+      // 👇 This would be real backend call, comment it out for now
+      // const res = await axios.get(
+      //   `http://localhost:5001/predict-price?engagement_rate=${data.engagement_rate}`
+      // );
+      // setPredictedPrice(res.data.predicted_price);
     } catch (err) {
       console.error("Prediction failed", err);
       setPredictedPrice("Error");
     }
-
+  
     setLoading(false);
   };
+  
 
   return (
     <div style={{ background: "#fff", minHeight: "100vh" }}>

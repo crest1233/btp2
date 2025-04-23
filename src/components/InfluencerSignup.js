@@ -12,21 +12,31 @@ const InfluencerSignup = () => {
 
   const onSubmit = async (data) => {
     setLoading(true);
-
+  
     const finalData = {
       ...data,
       niche: data.nicheSelect === "Other" ? data.niche : data.nicheSelect,
     };
-
+  
     try {
-      await axios.post("http://localhost:5001/influencer-signup", finalData);
+      // 👇 Simulate successful signup
+      console.log("Simulated POST data:", finalData);
+      
+      // fake delay
+      await new Promise((res) => setTimeout(res, 1000));
+  
       reset();
       navigate("/success");
+      
+      // 👇 Real request (comment out for frontend-only mode)
+      // await axios.post("http://localhost:5001/influencer-signup", finalData);
     } catch (error) {
       alert("Error: " + (error.response?.data?.error || "Unknown error"));
     }
+  
     setLoading(false);
   };
+  
 
   return (
     <div style={{ background: "#fff", minHeight: "100vh" }}>

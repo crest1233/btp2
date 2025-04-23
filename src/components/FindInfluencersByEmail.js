@@ -27,20 +27,30 @@ const FindInfluencersByEmail = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     setError(null);
+  
     try {
       const finalData = {
         email: data.email,
         niche: data.nicheSelect === "Other" ? data.niche : data.nicheSelect,
       };
-      
-      const response = await axios.post("http://localhost:5001/find-influencers", finalData);
-      
-      setInfluencers(response.data);
+  
+      // 👇 Fake data while backend is unavailable
+      const fakeResponse = [
+        { name: "Ayesha Khan", followers: 120000, rate: "₹5,000" },
+        { name: "Rohan Mehta", followers: 95000, rate: "₹4,200" },
+      ];
+      setInfluencers(fakeResponse);
+  
+      // 👇 Comment this out if deploying frontend only
+      // const response = await axios.post("http://localhost:5001/find-influencers", finalData);
+      // setInfluencers(response.data);
     } catch (err) {
-      setError(err.response?.data?.error || "An error occurred");
+      setError("Something went wrong. Please try again.");
     }
+  
     setLoading(false);
   };
+  
 
   const parseFollower = (range) => {
     switch (range) {
