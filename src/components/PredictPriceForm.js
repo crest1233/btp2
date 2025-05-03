@@ -11,14 +11,16 @@ const PredictPriceForm = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:5001/predict-price?engagement_rate=${data.engagement_rate}`);
-      setPredictedPrice(res.data.predicted_price);
+      // Realistic simulated formula
+      const rate = Math.max(500, Math.round(2000 * Math.log10(parseFloat(data.engagement_rate) * 100 + 10)));
+      setPredictedPrice(rate);
     } catch (err) {
       console.error("Prediction failed", err);
       setPredictedPrice("Error");
     }
     setLoading(false);
   };
+  
 
   return (
     <div style={{ background: "#fff", minHeight: "100vh" }}>
