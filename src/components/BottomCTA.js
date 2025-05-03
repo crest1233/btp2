@@ -1,8 +1,5 @@
-// src/pages/PredictPriceForm.js
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-
-import axios from "axios";
 
 const PredictPriceForm = () => {
   const { register, handleSubmit } = useForm();
@@ -12,34 +9,40 @@ const PredictPriceForm = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     setPredictedPrice(null);
-  
+
     try {
-      // 👇 Simulate result (frontend-only mode)
-      // Remove this if backend is available
-      const fakePrediction = (parseFloat(data.engagement_rate || 0) * 1000).toFixed(2);
-      setPredictedPrice(fakePrediction);
-  
-      // 👇 This would be real backend call, comment it out for now
-      // const res = await axios.get(
-      //   `http://localhost:5001/predict-price?engagement_rate=${data.engagement_rate}`
-      // );
-      // setPredictedPrice(res.data.predicted_price);
+      const engagementRate = parseFloat(data.engagement_rate);
+      const followers = parseInt(data.followers, 10);
+
+      let rate;
+
+      if (followers < 10000) {
+        rate = 1000 + engagementRate * 9000;
+      } else if (followers < 50000) {
+        rate = 10000 + engagementRate * 40000;
+      } else if (followers < 100000) {
+        rate = 50000 + engagementRate * 450000;
+      } else if (followers < 500000) {
+        rate = 500000 + engagementRate * 500000;
+      } else {
+        rate = 1000000 + engagementRate * 1000000;
+      }
+
+      setPredictedPrice(Math.round(rate));
     } catch (err) {
       console.error("Prediction failed", err);
       setPredictedPrice("Error");
     }
-  
+
     setLoading(false);
   };
-  
 
   return (
     <div style={{ background: "#fff", minHeight: "100vh" }}>
-     
       <div style={styles.headerSection}>
         <h1 style={styles.heading}>Predict Your Commercial Rate</h1>
         <p style={styles.description}>
-          Enter your engagement rate to see what you could be charging.
+          Based on your follower count and engagement rate, we’ll estimate your ideal price.
         </p>
       </div>
 
@@ -56,31 +59,42 @@ const PredictPriceForm = () => {
             </div>
           </div>
 
-          <div style={styles.field}>
-            <label style={styles.label}>Engagement Rate (%)</label>
-            <input
-              {...register("engagement_rate")}
-              type="number"
-              step="0.001"
-              style={styles.input}
-              placeholder="e.g. 0.042"
-              required
-            />
+          <div style={styles.row}>
+            <div style={styles.field}>
+              <label style={styles.label}>Followers</label>
+              <input
+                {...register("followers")}
+                type="number"
+                placeholder="e.g. 20000"
+                style={styles.input}
+                required
+              />
+            </div>
+            <div style={styles.field}>
+              <label style={styles.label}>Engagement Rate (%)</label>
+              <input
+                {...register("engagement_rate")}
+                type="number"
+                step="0.01"
+                placeholder="e.g. 2.5"
+                style={styles.input}
+                required
+              />
+            </div>
           </div>
 
           <button type="submit" disabled={loading} style={styles.submit}>
-            {loading ? "Predicting..." : "Predict Price"}
+            {loading ? "Predicting..." : "Predict Now"}
           </button>
         </form>
 
         {predictedPrice !== null && (
-  <div style={styles.result}>
-    <h3 style={{ color: "#000" }}>🎯 Predicted Commercial Rate:</h3>
-    <p style={styles.price}>₹ {(predictedPrice / 10).toFixed(2)}</p>
-  </div>
-)}
+          <div style={styles.result}>
+            <h3>🎯 Estimated Commercial Rate</h3>
+            <p style={styles.price}>₹ {(predictedPrice / 3).toLocaleString("en-IN")}</p>
 
-
+          </div>
+        )}
       </div>
     </div>
   );

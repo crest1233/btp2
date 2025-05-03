@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import Navbar from "../components/Navbar";
-import axios from "axios";
 
 const PredictPriceForm = () => {
   const { register, handleSubmit } = useForm();
@@ -11,16 +10,35 @@ const PredictPriceForm = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      // Realistic simulated formula
-      const rate = Math.max(500, Math.round(2000 * Math.log10(parseFloat(data.engagement_rate) * 100 + 10)));
-      setPredictedPrice(rate);
+      const engagementRate = parseFloat(data.engagement_rate);
+      const followers = parseInt(data.followers, 10);
+
+      let rate;
+
+      if (followers < 10000) {
+        // Nano-influencers
+        rate = 1000 + engagementRate * 9000; // ₹1,000 to ₹10,000
+      } else if (followers < 50000) {
+        // Micro-influencers
+        rate = 10000 + engagementRate * 40000; // ₹10,000 to ₹50,000
+      } else if (followers < 100000) {
+        // Mid-tier influencers
+        rate = 50000 + engagementRate * 450000; // ₹50,000 to ₹500,000
+      } else if (followers < 500000) {
+        // Macro-influencers
+        rate = 500000 + engagementRate * 500000; // ₹500,000 to ₹1,000,000
+      } else {
+        // Mega-influencers
+        rate = 1000000 + engagementRate * 1000000; // ₹1,000,000+
+      }
+
+      setPredictedPrice(Math.round(rate));
     } catch (err) {
       console.error("Prediction failed", err);
       setPredictedPrice("Error");
     }
     setLoading(false);
   };
-  
 
   return (
     <div style={{ background: "#fff", minHeight: "100vh" }}>
@@ -40,24 +58,47 @@ const PredictPriceForm = () => {
           <div style={styles.row}>
             <div style={styles.field}>
               <label style={styles.label}>Full Name</label>
-              <input {...register("name")} style={styles.input} placeholder="John Carter" required />
+              <input
+                {...register("name")}
+                style={styles.input}
+                placeholder="John Carter"
+                required
+              />
             </div>
             <div style={styles.field}>
               <label style={styles.label}>Email</label>
-              <input {...register("email")} type="email" style={styles.input} placeholder="example@email.com" required />
+              <input
+                {...register("email")}
+                type="email"
+                style={styles.input}
+                placeholder="example@email.com"
+                required
+              />
             </div>
           </div>
 
-          <div style={styles.field}>
-            <label style={styles.label}>Engagement Rate (%)</label>
-            <input
-              {...register("engagement_rate")}
-              type="number"
-              step="0.001"
-              style={styles.input}
-              placeholder="e.g. 0.042"
-              required
-            />
+          <div style={styles.row}>
+            <div style={styles.field}>
+              <label style={styles.label}>Number of Followers</label>
+              <input
+                {...register("followers")}
+                type="number"
+                style={styles.input}
+                placeholder="e.g. 15000"
+                required
+              />
+            </div>
+            <div style={styles.field}>
+              <label style={styles.label}>Engagement Rate (%)</label>
+              <input
+                {...register("engagement_rate")}
+                type="number"
+                step="0.001"
+                style={styles.input}
+                placeholder="e.g. 0.042"
+                required
+              />
+            </div>
           </div>
 
           <button type="submit" disabled={loading} style={styles.submit}>
