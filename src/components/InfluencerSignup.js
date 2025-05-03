@@ -12,38 +12,35 @@ const InfluencerSignup = () => {
 
   const onSubmit = async (data) => {
     setLoading(true);
-  
+
     const finalData = {
       ...data,
       niche: data.nicheSelect === "Other" ? data.niche : data.nicheSelect,
     };
-  
-    try {
-      // 👇 Simulate successful signup
-      console.log("Simulated POST data:", finalData);
-      
-      // fake delay
-      await new Promise((res) => setTimeout(res, 1000));
-  
-      reset();
-      navigate("/success");
-      // Trigger Vercel redeploy
 
-      // 👇 Real request (comment out for frontend-only mode)
-      // await axios.post("http://localhost:5001/influencer-signup", finalData);
+    try {
+      const response = await axios.post(
+        "https://backend-26d4.onrender.com/influencer-signup",
+        finalData
+      );
+
+      if (response.data && response.data.influencerId) {
+        reset();
+        navigate("/success"); // redirect to success page
+      } else {
+        alert("Signup failed. Please try again.");
+      }
     } catch (error) {
+      console.error("Signup error:", error);
       alert("Error: " + (error.response?.data?.error || "Unknown error"));
     }
-  
+
     setLoading(false);
   };
-  
 
   return (
     <div style={{ background: "#fff", minHeight: "100vh" }}>
       <Navbar />
-
-      {/* Header Section */}
       <div style={styles.headerSection}>
         <h1 style={styles.heading}>Contact us</h1>
         <p style={styles.description}>
@@ -51,7 +48,6 @@ const InfluencerSignup = () => {
         </p>
       </div>
 
-      {/* Form Section */}
       <div style={styles.formCard}>
         <form onSubmit={handleSubmit(onSubmit)} style={styles.form}>
           <div style={styles.row}>

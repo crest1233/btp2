@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; // ✅ All imports first
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import Navbar from "../components/Navbar";
@@ -15,42 +15,33 @@ import {
 const FindInfluencersByEmail = () => {
   const { register, handleSubmit } = useForm();
 
-  // ✅ useState inside component
   const [showCustomNiche, setShowCustomNiche] = useState(false);
   const [influencers, setInfluencers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [outliers, setOutliers] = useState([]);
-
-
 
   const onSubmit = async (data) => {
     setLoading(true);
     setError(null);
-  
+
+    const finalData = {
+      email: data.email,
+      niche: data.nicheSelect === "Other" ? data.niche : data.nicheSelect,
+    };
+
     try {
-      const finalData = {
-        email: data.email,
-        niche: data.nicheSelect === "Other" ? data.niche : data.nicheSelect,
-      };
-  
-      // 👇 Fake data while backend is unavailable
-      const fakeResponse = [
-        { name: "Ayesha Khan", followers: 120000, rate: "₹5,000" },
-        { name: "Rohan Mehta", followers: 95000, rate: "₹4,200" },
-      ];
-      setInfluencers(fakeResponse);
-  
-      // 👇 Comment this out if deploying frontend only
-      // const response = await axios.post("http://localhost:5001/find-influencers", finalData);
-      // setInfluencers(response.data);
+      const response = await axios.post(
+        "https://backend-26d4.onrender.com/find-influencers",
+        finalData
+      );
+      setInfluencers(response.data);
     } catch (err) {
+      console.error(err);
       setError("Something went wrong. Please try again.");
     }
-  
+
     setLoading(false);
   };
-  
 
   const parseFollower = (range) => {
     switch (range) {
@@ -61,21 +52,6 @@ const FindInfluencersByEmail = () => {
       default: return 1000;
     }
   };
-  useEffect(() => {
-    axios
-      .get("http://localhost:5001/outliers")
-      .then((res) => {
-        const top5 = res.data
-          .filter(i => i.is_outlier)
-          .sort((a, b) => (b.commercial_rate - b.predicted_price) - (a.commercial_rate - a.predicted_price))
-          .slice(0, 5);
-        setOutliers(top5);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch outliers", err);
-      });
-  }, []);
-  
 
   const parsePrice = (priceStr) => {
     if (!priceStr) return 10000;
@@ -99,7 +75,6 @@ const FindInfluencersByEmail = () => {
     <div style={{ background: "#fff", minHeight: "100vh" }}>
       <Navbar />
 
-      {/* Header Section */}
       <div style={styles.headerSection}>
         <h1 style={styles.heading}>Find Top Influencers</h1>
         <p style={styles.description}>
@@ -107,7 +82,6 @@ const FindInfluencersByEmail = () => {
         </p>
       </div>
 
-      {/* Form Section */}
       <div style={styles.formCard}>
         <form onSubmit={handleSubmit(onSubmit)} style={styles.form}>
           <div style={styles.row}>
@@ -120,37 +94,34 @@ const FindInfluencersByEmail = () => {
                 style={styles.input}
               />
             </div>
-            
-<div style={styles.field}>
-  <label style={styles.label}>Niche</label>
-  <select
-  {...register("nicheSelect", { required: true })}
-  onChange={(e) => setShowCustomNiche(e.target.value === "Other")}
-  style={styles.select}
-  defaultValue=""
->
 
-    <option value="" disabled>Select Niche</option>
-    <option value="Fashion & Beauty">Fashion & Beauty</option>
-    <option value="Lifestyle & Travel">Lifestyle & Travel</option>
-    <option value="Food & Cooking">Food & Cooking</option>
-    <option value="Tech & Gadgets">Tech & Gadgets</option>
-    <option value="Other">Other</option>
-  </select>
+            <div style={styles.field}>
+              <label style={styles.label}>Niche</label>
+              <select
+                {...register("nicheSelect", { required: true })}
+                onChange={(e) => setShowCustomNiche(e.target.value === "Other")}
+                style={styles.select}
+                defaultValue=""
+              >
+                <option value="" disabled>Select Niche</option>
+                <option value="Fashion & Beauty">Fashion & Beauty</option>
+                <option value="Lifestyle & Travel">Lifestyle & Travel</option>
+                <option value="Food & Cooking">Food & Cooking</option>
+                <option value="Tech & Gadgets">Tech & Gadgets</option>
+                <option value="Other">Other</option>
+              </select>
 
-  {showCustomNiche && (
-  <div style={styles.field}>
-    <label style={styles.label}>Custom Niche</label>
-    <input
-      {...register("niche")}
-      placeholder="Enter your niche"
-      style={styles.input}
-    />
-  </div>
-)}
-
-</div>
-
+              {showCustomNiche && (
+                <div style={styles.field}>
+                  <label style={styles.label}>Custom Niche</label>
+                  <input
+                    {...register("niche")}
+                    placeholder="Enter your niche"
+                    style={styles.input}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           <button type="submit" style={styles.submit} disabled={loading}>
@@ -158,10 +129,8 @@ const FindInfluencersByEmail = () => {
           </button>
         </form>
 
-        {/* Feedback */}
         {error && <p style={styles.error}>{error}</p>}
 
-        {/* Visualizations */}
         {influencers.length > 0 && (
           <div style={{ marginTop: "4rem" }}>
             <h3 style={styles.chartTitle}>Top 3 by Engagement Rate</h3>
@@ -174,9 +143,6 @@ const FindInfluencersByEmail = () => {
                 <Bar dataKey="engagement_rate" fill="#a47dab" />
               </BarChart>
             </ResponsiveContainer>
-
-            
-
 
             <h3 style={styles.chartTitle}>Top 3 by Price (lower is better)</h3>
             <ResponsiveContainer width="100%" height={300}>
@@ -193,6 +159,7 @@ const FindInfluencersByEmail = () => {
                 <Bar dataKey="price" fill="#ffc658" />
               </BarChart>
             </ResponsiveContainer>
+
             <h3 style={styles.chartTitle}>Top 3 by Followers</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart
@@ -208,95 +175,62 @@ const FindInfluencersByEmail = () => {
                 <Bar dataKey="followers" fill="#8884d8" />
               </BarChart>
             </ResponsiveContainer>
-            {outliers.length > 0 && (
-  <>
-    <h3 style={styles.chartTitle}>🔥 Top 5 Most Overpriced Influencers</h3>
-    <ResponsiveContainer width="100%" height={350}>
-      <BarChart
-        data={outliers.map((i) => ({
-          name: i.name,
-          actual: i.commercial_rate,
-          predicted: i.predicted_price,
-        }))}
-      >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis
-          dataKey="name"
-          tick={{ fontSize: 12 }}
-          angle={-30}
-          textAnchor="end"
-          interval={0}
-        />
-        <YAxis />
-        <Tooltip />
-        <Bar dataKey="actual" fill="#ff4d4f" name="Actual Price" />
-        <Bar dataKey="predicted" fill="#82ca9d" name="Predicted Price" />
-      </BarChart>
-    </ResponsiveContainer>
-  </>
-)}
 
-
-            {/* Final Top 3 by Weighted Score */}
             <ul style={styles.finalList}>
-  {[...influencers]
-    .sort((a, b) => {
-      const scoreA =
-        (parseFloat(a.engagement_rate) * 0.4) +
-        (parseFollower(a.follower_range) / 100000 * 0.3) +
-        ((10000 - parsePrice(a.commercial_rate)) / 10000 * 0.3);
-      const scoreB =
-        (parseFloat(b.engagement_rate) * 0.4) +
-        (parseFollower(b.follower_range) / 100000 * 0.3) +
-        ((10000 - parsePrice(b.commercial_rate)) / 10000 * 0.3);
-      return scoreB - scoreA;
-    })
-    .slice(0, 3)
-    .map((inf, index) => {
-      const finalScore =
-        (parseFloat(inf.engagement_rate) * 0.4) +
-        (parseFollower(inf.follower_range) / 100000 * 0.3) +
-        ((10000 - parsePrice(inf.commercial_rate)) / 10000 * 0.3);
-
-      return (
-        <li key={index} style={styles.finalItem}>
-          <div style={styles.cardHeader}>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <strong style={styles.influencerName}>{inf.name}</strong>
-              <span style={styles.scoreText}>Score: <span style={styles.score}>{finalScore.toFixed(2)}</span></span>
-            </div>
-            <button
-              onClick={() => setInfluencers((prev) =>
-                prev.map((i, idx) =>
-                  idx === influencers.indexOf(inf) ? { ...i, showInfo: !i.showInfo } : i
-                )
-              )}
-              style={styles.moreBtn}
-            >
-              {inf.showInfo ? "Hide Info" : "More Info"}
-            </button>
-          </div>
-
-          {inf.showInfo && (
-            <div style={styles.infoBox}>
-              <p><b>Email:</b> {inf.email}</p>
-              <p><b>Phone:</b> {inf.mobile_number}</p>
-              <p><b>Instagram:</b>{" "}
-                <a href={inf.instagram_link} target="_blank" rel="noreferrer" style={styles.link}>
-                  {inf.instagram_link}
-                </a>
-              </p>
-              <p><b>Engagement Rate:</b> {inf.engagement_rate}%</p>
-              <p><b>Commercial Rate:</b> ₹{inf.commercial_rate}</p>
-              <p><b>Gender Ratio:</b> {inf.gender_ratio}</p>
-            </div>
-          )}
-        </li>
-      );
-    })}
-</ul>
-
-
+              {[...influencers]
+                .sort((a, b) => {
+                  const scoreA =
+                    (parseFloat(a.engagement_rate) * 0.4) +
+                    (parseFollower(a.follower_range) / 100000 * 0.3) +
+                    ((10000 - parsePrice(a.commercial_rate)) / 10000 * 0.3);
+                  const scoreB =
+                    (parseFloat(b.engagement_rate) * 0.4) +
+                    (parseFollower(b.follower_range) / 100000 * 0.3) +
+                    ((10000 - parsePrice(b.commercial_rate)) / 10000 * 0.3);
+                  return scoreB - scoreA;
+                })
+                .slice(0, 3)
+                .map((inf, index) => {
+                  const finalScore =
+                    (parseFloat(inf.engagement_rate) * 0.4) +
+                    (parseFollower(inf.follower_range) / 100000 * 0.3) +
+                    ((10000 - parsePrice(inf.commercial_rate)) / 10000 * 0.3);
+                  return (
+                    <li key={index} style={styles.finalItem}>
+                      <div style={styles.cardHeader}>
+                        <div>
+                          <strong style={styles.influencerName}>{inf.name}</strong>
+                          <span style={styles.scoreText}>Score: <span style={styles.score}>{finalScore.toFixed(2)}</span></span>
+                        </div>
+                        <button
+                          onClick={() => setInfluencers((prev) =>
+                            prev.map((i, idx) =>
+                              idx === influencers.indexOf(inf) ? { ...i, showInfo: !i.showInfo } : i
+                            )
+                          )}
+                          style={styles.moreBtn}
+                        >
+                          {inf.showInfo ? "Hide Info" : "More Info"}
+                        </button>
+                      </div>
+                      {inf.showInfo && (
+                        <div style={styles.infoBox}>
+                          <p><b>Email:</b> {inf.email}</p>
+                          <p><b>Phone:</b> {inf.mobile_number}</p>
+                          <p><b>Instagram:</b>{" "}
+                            <a href={inf.instagram_link} target="_blank" rel="noreferrer" style={styles.link}>
+                              {inf.instagram_link}
+                            </a>
+                          </p>
+                          <p><b>Engagement Rate:</b> {inf.engagement_rate}%</p>
+                          <p><b>Commercial Rate:</b> ₹{inf.commercial_rate}</p>
+                          <p><b>Gender Ratio:</b> {inf.gender_ratio}</p>
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+            </ul>
           </div>
         )}
       </div>
