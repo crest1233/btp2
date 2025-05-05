@@ -1,4 +1,5 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Hero from "./Hero";
 import Intro from "./Intro";
 import Navbar from "./Navbar";
@@ -6,21 +7,30 @@ import StatsSection from "./StatsSection";
 import TeamSection from "./TeamSection";
 import CurvedProjects from "./CurvedProjects";
 import BottomCTA from "./BottomCTA";
-import InfluencerSignup from "./InfluencerSignup"; // ✅ import this
+import InfluencerSignup from "./InfluencerSignup";
 
 const LandingPage = () => {
   const curvedRef = useRef();
   const aboutRef = useRef();
+  const location = useLocation();
 
   const scrollToSection = (index) => {
-    if (index === 0 && curvedRef.current) {
-      curvedRef.current.scrollIntoView({ behavior: "smooth" });
+    if (index === 0 && curvedRef.current?.scrollToSection) {
+      curvedRef.current.scrollToSection(0);
+    }
+    if (index === 1 && curvedRef.current?.scrollToSection) {
+      curvedRef.current.scrollToSection(1);
     }
     if (index === 2 && aboutRef.current) {
       aboutRef.current.scrollIntoView({ behavior: "smooth" });
     }
-    
   };
+
+  useEffect(() => {
+    if (location.state?.scrollTo !== undefined) {
+      scrollToSection(location.state.scrollTo);
+    }
+  }, [location.state]);
 
   return (
     <div style={styles.container}>
@@ -34,9 +44,7 @@ const LandingPage = () => {
         <div ref={aboutRef}>
           <StatsSection />
         </div>
-        <div ref={curvedRef}>
-          <CurvedProjects />
-        </div>
+        <CurvedProjects ref={curvedRef} />
         <BottomCTA />
         <TeamSection />
       </div>

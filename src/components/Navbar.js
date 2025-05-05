@@ -1,48 +1,50 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
-const Navbar = ({ onNavigate }) => (
-  <nav style={styles.nav}>
-    
+const Navbar = ({ onNavigate }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
 
-    <div style={styles.navCenter}>
-      <ul style={styles.menu}>
-        <li style={styles.menuItem}>
-          <span onClick={() => onNavigate(0)} style={styles.link}>Influencers</span>
-        </li>
-        <li style={styles.menuItem}>
-          <span onClick={() => onNavigate(1)} style={styles.link}>Brands</span>
-        </li>
-        <li style={styles.menuItem}>
-  <span onClick={() => onNavigate(2)} style={styles.link}>About</span>
-</li>
+  const handleNavClick = (index) => {
+    if (location.pathname === "/") {
+      // If already on the homepage, scroll
+      onNavigate?.(index);
+    } else {
+      // If on a different route, go to homepage and trigger scroll via location.state
+      navigate("/", { state: { scrollTo: index } });
+    }
+  };
 
-<li style={styles.menuItem}>
-  <Link to="/contact" style={styles.link}>Contact</Link>
-</li>
-
-      </ul>
-    </div>
-  </nav>
-);
+  return (
+    <nav style={styles.nav}>
+      <div style={styles.navCenter}>
+        <ul style={styles.menu}>
+          <li style={styles.menuItem}>
+            <span onClick={() => handleNavClick(0)} style={styles.link}>Influencers</span>
+          </li>
+          <li style={styles.menuItem}>
+            <span onClick={() => handleNavClick(1)} style={styles.link}>Brands</span>
+          </li>
+          <li style={styles.menuItem}>
+            <span onClick={() => handleNavClick(2)} style={styles.link}>About</span>
+          </li>
+          <li style={styles.menuItem}>
+            <Link to="/contact" style={styles.link}>Contact</Link>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  );
+};
 
 const styles = {
   nav: {
-    position: "relative", // ✅ scrolls with page now
+    position: "relative",
     width: "100%",
     display: "flex",
     justifyContent: "center",
     paddingTop: "2.5rem",
     zIndex: 100,
-  },
-  logo: {
-    position: "absolute", // logo stays left (not fixed)
-    left: "2rem",
-    top: "50%",
-    transform: "translateY(-50%)",
-    fontWeight: "bold",
-    fontSize: "1.1rem",
-    color: "#fff",
   },
   navCenter: {
     display: "flex",
@@ -70,10 +72,10 @@ const styles = {
   },
 };
 
-// Optional hover styles (for smoother interaction)
+// Optional hover effect injection
 const styleTag = document.createElement("style");
 styleTag.innerHTML = `
-  li:hover a {
+  li:hover a, li:hover span {
     transform: scale(1.1);
     filter: brightness(1.3);
   }

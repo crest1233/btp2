@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2/promise");
@@ -7,10 +9,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ Pool connection using DATABASE_URL from Railway
-const pool = mysql.createPool({
-  uri: process.env.DATABASE_URL,
-});
+const pool = mysql.createPool(process.env.DATABASE_URL);
+
+
 
 console.log("✅ MySQL pool initialized");
 
